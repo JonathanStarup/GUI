@@ -1,0 +1,6 @@
+[package]
+name        = "GUI"
+description = "Model View Controller (MVC) library in Flix with Swing renderer included."
+version     = "0.1.0"
+flix        = "0.46.0"
+authors     = ["Jonathan Lindegaard Starup <jls@cs.au.dk>"]
