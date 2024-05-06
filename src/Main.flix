@@ -1,6 +1,6 @@
 use Display.{Point, Dimension, Square, mapY, mapX, translate, point, maxCorner}
 
-def main(): Unit \ IO = region rc {
+def runBouncySquare(): Unit \ IO = region rc {
     let app = bouncySquare(rc, {w=50, h=50}, 3,{w=400, h=300});
     let frame = SwingRender.makeFrame(app.title);
     App.run(app, SwingRender.render(frame), () -> SwingRender.isClosed(frame))
