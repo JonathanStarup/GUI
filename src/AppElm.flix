@@ -1,7 +1,7 @@
 use Display.{Dimension, point, translate, mapY, mapX, maxCorner, Square, Point}
 
 enum Looping[msg] {
-    case Fixed(Unit -> List[msg])
+    case Fixed(Unit -> List[msg]) // 30/s
     case AfterRender(Unit -> List[msg])
 }
 
@@ -15,7 +15,7 @@ type alias AppElm[model, msg, display] = {
 
 def main(): Unit \ IO = region rc {
     let (frame, isClosed) = SwingRender.makeFrameWithClosed("Bouncy Square", rc);
-    run(bouncySquareElm({w=50, h=50}, 3, {w=400, h=300}), SwingRender.render(frame), isClosed)
+    run(bouncySquareElm({w=50, h=50}, 5, {w=400, h=300}), SwingRender.render(frame), isClosed)
 }
 
 // TODO fixed updates funs asap
@@ -24,6 +24,7 @@ def run(app: AppElm[model, msg, display], render: display -> Unit \ ef2, quit: U
 
     let model = ref app.init @ rc;
     let msgs = MutDeque.empty(rc);
+    let fps = 30i64;
 
     def updates(): _ \ rc = match MutDeque.popFront(msgs) {
         case None => ()
@@ -35,7 +36,7 @@ def run(app: AppElm[model, msg, display], render: display -> Unit \ ef2, quit: U
     def tightLoop(): _ \ {ef1, ef2, ef3, rc, IO} = {
         let now = Time.Instant.now();
         if (Time.Instant.after(now, deref nextFixed)) {
-            nextFixed := Time.Instant.plus(deref nextFixed, 1000i64);
+            nextFixed := Time.Instant.plus(deref nextFixed, 1_000_000_000i64 / fps);
             foreach (trigger <- app.triggers) match trigger {
                 case Looping.Fixed(f) => f() |> List.forEach(x -> MutDeque.pushBack(x, msgs))
                 case _ => ()
@@ -51,11 +52,6 @@ def run(app: AppElm[model, msg, display], render: display -> Unit \ ef2, quit: U
     };
     tightLoop()
 }
-
-def frameTimeMillis(_app: AppElm[mode, msg, display]): Float64 = {
-    1000.0 / 5.0
-}
-
 
 type alias Model = {sq = Square, velo = Point}
 def bouncySquareElm(square: Dimension, speed: Int32, bounding: Dimension): AppElm[Model, Unit, Display] = {

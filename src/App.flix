@@ -8,26 +8,22 @@ type alias App[ef: Eff] = {
 mod App {
 
 pub def run(app: App[ef1], render: Display -> Unit \ ef2, quit: Unit -> Bool \ ef3): Unit \ {ef1, ef2, ef3, IO} = region rc {
-    let frameTime = frameTimeMillis(app);
-    let frameTimeInt32 = Float64.clampToInt32(frameTime, 1, 2000, 33);
-    let frameTimeInt64 = Int32.toInt64(frameTimeInt32);
-    let waitingTime = Time.Duration.fromMilliSeconds(frameTimeInt32 / 6);
+    let frameTime = debug(frameTimeNano(app));
+    let frameTimeInt64 = Float64.clampToInt64(frameTime, 1i64, 1_000_000_000i64, 0_033_333_333i64);
     let before = ref Time.Instant.now() @ rc;
     def tightLoop(): _ \ {ef1, ef2, ef3, rc, IO} = {
         let now = Time.Instant.now();
         if (Time.Instant.after(now, deref before)) {
             before := Time.Instant.plus(deref before, frameTimeInt64);
-            render(app.loop());
-            // avoid budy idling for slow framerate
-            Thread.sleep(waitingTime)
+            render(app.loop())
         } else ();
         if (quit()) () else tightLoop()
     };
     tightLoop()
 }
 
-def frameTimeMillis(app: App[ef]): Float64 = {
-    1000.0 / app.loopsPerSecond
+def frameTimeNano(app: App[ef]): Float64 = {
+    1_000_000_000.0 / app.loopsPerSecond
 }
 
 }

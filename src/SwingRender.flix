@@ -2,15 +2,15 @@ mod SwingRender {
 use Display.{Square, Dimension}
 
 pub def render(frame: ##javax.swing.JFrame, disp: Display): Unit \ IO = {
-    // clear
     import javax.swing.JFrame.getContentPane(): ##java.awt.Container \ IO;
     let container = getContentPane(frame);
-    import java.awt.Container.removeAll(): Unit \ IO;
-    removeAll(container);
 
     // make square
     let square = makeCanvas(disp.size, makeSquare(disp.square));
 
+    // remove square
+    import java.awt.Container.removeAll(): Unit \ IO;
+    removeAll(container);
     // add square
     import java.awt.Container.add(##java.awt.Component): ##java.awt.Component \ IO;
     add(container, checked_cast (square));
