@@ -19,7 +19,6 @@ def main(): Unit \ IO = region rc {
 }
 
 // TODO fixed updates funs asap
-// TODO close doesnt close
 def run(app: AppElm[model, msg, display], render: display -> Unit \ ef2, quit: Unit -> Bool \ ef3): Unit \ {ef1, ef2, ef3, IO} = region rc {
     let nextFixed = ref Time.Instant.now() @ rc;
 
