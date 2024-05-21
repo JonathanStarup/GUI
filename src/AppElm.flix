@@ -13,9 +13,9 @@ type alias AppElm[model, msg, display] = {
     triggers = List[Looping[msg]]
 }
 
-def main(): Unit \ IO = {
-    let frame = SwingRender.makeFrame("Bouncy Square");
-    run(bouncySquareElm({w=50, h=50}, 3, {w=400, h=300}), SwingRender.render(frame), () -> SwingRender.isClosed(frame))
+def main(): Unit \ IO = region rc {
+    let (frame, isClosed) = SwingRender.makeFrameWithClosed("Bouncy Square", rc);
+    run(bouncySquareElm({w=50, h=50}, 3, {w=400, h=300}), SwingRender.render(frame), isClosed)
 }
 
 // TODO fixed updates funs asap

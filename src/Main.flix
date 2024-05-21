@@ -2,8 +2,8 @@ use Display.{Point, Dimension, Square, mapY, mapX, translate, point, maxCorner}
 
 def runBouncySquare(): Unit \ IO = region rc {
     let app = bouncySquare(rc, {w=50, h=50}, 3,{w=400, h=300});
-    let frame = SwingRender.makeFrame(app.title);
-    App.run(app, SwingRender.render(frame), () -> SwingRender.isClosed(frame))
+    let (frame, isClosed) = SwingRender.makeFrameWithClosed(app.title, rc);
+    App.run(app, SwingRender.render(frame), isClosed)
 }
 
 def bouncySquare(rc: Region[r], square: Dimension, speed: Int32, bounding: Dimension): App[r] \ r = {

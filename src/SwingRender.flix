@@ -22,8 +22,8 @@ pub def render(frame: ##javax.swing.JFrame, disp: Display): Unit \ IO = {
     repaint(frame)
 }
 
-pub def makeFrame(title: String): ##javax.swing.JFrame \ IO = {
-    // make frame
+/// onClose must not use algebraic effects
+pub def makeFrame(title: String, onClose: Unit -> any \ ef): ##javax.swing.JFrame \ IO = {
     import java_new javax.swing.JFrame(String): ##javax.swing.JFrame \ IO as newJFrame;
     let frame = newJFrame(title);
     import javax.swing.JFrame.setSize(Int32, Int32): Unit \ IO;
@@ -33,14 +33,30 @@ pub def makeFrame(title: String): ##javax.swing.JFrame \ IO = {
     import javax.swing.JFrame.setDefaultCloseOperation(Int32): Unit \ IO;
     import static java_get_field javax.swing.JFrame.DISPOSE_ON_CLOSE: Int32 \ IO as disposeOnClose;
     setDefaultCloseOperation(frame, disposeOnClose());
+    import javax.swing.JFrame.addWindowListener(##java.awt.event.WindowListener): Unit \ IO;
+    addWindowListener(frame)({
+        new ##java.awt.event.WindowListener {
+            def windowClosed(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit \ ef = {
+                onClose();
+                ()
+            }
+            def windowClosing(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit = ()
+            def windowIconified(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit = ()
+            def windowDeiconified(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit = ()
+            def windowActivated(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit = ()
+            def windowOpened(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit = ()
+            def windowDeactivated(_this: ##java.awt.event.WindowListener, _e: ##java.awt.event.WindowEvent): Unit = ()
+        }
+    });
     import javax.swing.JFrame.setVisible(Bool): Unit \ IO;
     setVisible(frame, true);
     frame
 }
 
-pub def isClosed(frame: ##javax.swing.JFrame): Bool \ IO = {
-    import javax.swing.JFrame.isDisplayable(): Bool \ IO;
-    not isDisplayable(frame)
+pub def makeFrameWithClosed(title: String, rc: Region[r]): (##javax.swing.JFrame, Unit -> Bool \ r) \ IO + r = {
+    let isClosed = ref false @ rc;
+    let frame = makeFrame(title, () -> Ref.put(true, isClosed));
+    (frame, () -> Ref.get(isClosed))
 }
 
 def makeSquare(square: Square, g: ##java.awt.Graphics2D): Unit \ IO = {
